@@ -11,7 +11,7 @@ const folderPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(folderPath);
 
 for (const folder of commandFolders) {
-	const commandsPath = path.join(foldersPath, folder);
+	const commandsPath = path.join(folderPath, folder);
 	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);
@@ -25,7 +25,7 @@ for (const folder of commandFolders) {
 	}
 }
 
-client.on(Events.InteractionCreate, interaction => {
+client.on(Events.InteractionCreate, async interaction => {
     // To make sure the command is a slash command and not a Chat Input
     if (!interaction.isChatInputCommand()) return;
     
@@ -36,6 +36,17 @@ client.on(Events.InteractionCreate, interaction => {
 		return;
 	}
 	console.log(interaction);
+
+    try {
+		await command.execute(interaction);
+	} catch (error) {
+		console.error(error);
+		if (interaction.replied || interaction.deferred) {
+			await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+		} else {
+			await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+		}
+	}
 });
 
 client.on("messageCreate", (message) =>{
